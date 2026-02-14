@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { sendToUser } = require('../services/notificationService');
 
 // Generate unique booking number
 const generateBookingNumber = () => {
@@ -211,9 +212,18 @@ exports.updateBookingStatus = async (req, res) => {
         };
 
         if (statusMessages[status]) {
+            // Database notification
             await pool.query(
                 'INSERT INTO notifications (user_id, booking_id, title, message, type) VALUES (?, ?, ?, ?, ?)',
                 [bookings[0].customer_id, req.params.id, 'Booking Update', statusMessages[status], status === 'delivered' ? 'delivery' : 'status_update']
+            );
+
+            // Real-time Push Notification
+            await sendToUser(
+                bookings[0].customer_id,
+                `Booking ${bookings[0].booking_number}`,
+                statusMessages[status],
+                { bookingId: req.params.id, type: 'booking_update' }
             );
         }
 

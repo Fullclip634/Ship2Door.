@@ -237,6 +237,25 @@ exports.googleLogin = async (req, res) => {
 };
 
 
+// Save push token for notifications
+exports.savePushToken = async (req, res) => {
+    try {
+        const { pushToken } = req.body;
+        const userId = req.user.id;
+
+        if (!pushToken) {
+            return res.status(400).json({ success: false, message: 'Push token is required.' });
+        }
+
+        await pool.query('UPDATE users SET push_token = ? WHERE id = ?', [pushToken, userId]);
+
+        res.json({ success: true, message: 'Push token saved successfully.' });
+    } catch (error) {
+        console.error('Error saving push token:', error);
+        res.status(500).json({ success: false, message: 'Server error while saving push token.' });
+    }
+};
+
 // Admin: Get all customers
 exports.getAllCustomers = async (req, res) => {
     try {

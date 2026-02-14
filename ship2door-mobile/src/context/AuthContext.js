@@ -87,8 +87,16 @@ export function AuthProvider({ children }) {
         return userData;
     };
 
+    const registerPushToken = async (pushToken) => {
+        try {
+            await authAPI.registerPushToken(pushToken);
+        } catch (e) {
+            console.error('Failed to register push token:', e);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, loading, login, register, googleLogin, logout, updateUser }}>
+        <AuthContext.Provider value={{ user, loading, login, register, googleLogin, logout, updateUser, registerPushToken }}>
             {children}
         </AuthContext.Provider>
     );

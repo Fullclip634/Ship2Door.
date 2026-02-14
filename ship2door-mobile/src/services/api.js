@@ -44,6 +44,7 @@ export const authAPI = {
     getProfile: () => api.get('/auth/profile'),
     updateProfile: (data) => api.put('/auth/profile', data),
     changePassword: (data) => api.put('/auth/change-password', data),
+    registerPushToken: (pushToken) => api.post('/auth/push-token', { pushToken }),
 };
 
 export const tripAPI = {

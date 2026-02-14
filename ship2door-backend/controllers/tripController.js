@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { sendToUser } = require('../services/notificationService');
 
 // Create a new trip (Admin only)
 exports.createTrip = async (req, res) => {
@@ -148,9 +149,18 @@ exports.updateTripStatus = async (req, res) => {
 
         if (statusMessages[status]) {
             for (const booking of bookings) {
+                // Database notification (for in-app list)
                 await pool.query(
                     'INSERT INTO notifications (user_id, trip_id, title, message, type) VALUES (?, ?, ?, ?, ?)',
                     [booking.customer_id, req.params.id, 'Trip Update', statusMessages[status], status === 'delayed' ? 'delay' : 'status_update']
+                );
+
+                // Real-time Push Notification
+                await sendToUser(
+                    booking.customer_id,
+                    'Trip Update ▸ ' + directionLabel,
+                    statusMessages[status],
+                    { tripId: req.params.id, type: 'trip_update' }
                 );
             }
         }
