@@ -1,12 +1,10 @@
 import React from 'react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Package, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {
     const { login } = useAuth();
-    const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -19,9 +17,8 @@ export default function Login() {
         setLoading(true);
         try {
             await login(email, password);
-            navigate('/');
         } catch (err) {
-            setError(err.response?.data?.message || err.message || 'Login failed.');
+            setError(err.response?.data?.message || 'Invalid credentials. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -29,57 +26,80 @@ export default function Login() {
 
     return (
         <div className="login-page">
+            {/* Decorative background elements */}
+            <div className="login-bg-shapes">
+                <div className="login-bg-circle login-bg-circle-1" />
+                <div className="login-bg-circle login-bg-circle-2" />
+                <div className="login-bg-circle login-bg-circle-3" />
+            </div>
+
             <div className="login-card">
-                <div className="login-logo" style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <img src="/logo.png" alt="Ship2Door Logo" style={{ width: '200px', height: 'auto', marginBottom: '0.5rem' }} />
-                    <p style={{ marginTop: '-15px', color: 'var(--gray-500)', fontSize: '0.9rem', fontWeight: '500' }}>Admin Portal</p>
+                {/* Logo */}
+                <div className="login-logo">
+                    <div className="login-logo-container">
+                        <img src="/logo.png" alt="Ship2Door" className="login-logo-img" />
+                    </div>
+                    <p className="login-subtitle">Admin Control Center</p>
                 </div>
 
-                {error && <div className="login-error">{error}</div>}
+                {/* Error */}
+                {error && (
+                    <div className="login-error">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" />
+                        </svg>
+                        {error}
+                    </div>
+                )}
 
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label className="form-label">Email Address</label>
+                {/* Form */}
+                <form onSubmit={handleSubmit} className="login-form">
+                    <div className="login-field">
+                        <label>Email Address</label>
                         <input
                             type="email"
-                            className="form-input"
                             placeholder="admin@ship2door.com"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={e => setEmail(e.target.value)}
                             required
+                            autoComplete="email"
                         />
                     </div>
 
-                    <div className="form-group">
-                        <label className="form-label">Password</label>
-                        <div style={{ position: 'relative' }}>
+                    <div className="login-field">
+                        <label>Password</label>
+                        <div className="login-password-wrap">
                             <input
                                 type={showPassword ? 'text' : 'password'}
-                                className="form-input"
                                 placeholder="Enter your password"
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                onChange={e => setPassword(e.target.value)}
                                 required
-                                style={{ paddingRight: '44px' }}
+                                autoComplete="current-password"
                             />
                             <button
                                 type="button"
+                                className="login-password-toggle"
                                 onClick={() => setShowPassword(!showPassword)}
-                                style={{
-                                    position: 'absolute', right: '12px', top: '50%',
-                                    transform: 'translateY(-50%)', color: 'var(--gray-400)',
-                                    padding: '4px'
-                                }}
+                                tabIndex={-1}
                             >
                                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
                         </div>
                     </div>
 
-                    <button type="submit" className="btn btn-primary login-btn" disabled={loading}>
-                        {loading ? 'Signing in...' : 'Sign In'}
+                    <button type="submit" className="login-submit" disabled={loading}>
+                        {loading ? (
+                            <span className="login-spinner" />
+                        ) : 'Sign In'}
                     </button>
                 </form>
+
+                <div className="login-footer">
+                    <span>Ship2Door &copy; {new Date().getFullYear()}</span>
+                    <span className="login-footer-dot">·</span>
+                    <span>Secure Admin Access</span>
+                </div>
             </div>
         </div>
     );

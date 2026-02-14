@@ -153,22 +153,36 @@ exports.changePassword = async (req, res) => {
     }
 };
 
-// Google Login
+// Google Login — supports both idToken and accessToken fallback flows
 exports.googleLogin = async (req, res) => {
     try {
-        const { idToken } = req.body;
-        if (!idToken) {
-            return res.status(400).json({ success: false, message: 'Google ID token is required.' });
+        const { idToken, google_id: directGoogleId, email: directEmail, name: directName, picture: directPicture } = req.body;
+
+        let google_id, email, name, picture;
+
+        if (idToken) {
+            // Flow 1 (preferred): Verify Google ID token
+            const ticket = await client.verifyIdToken({
+                idToken,
+                audience: process.env.GOOGLE_CLIENT_ID,
+            });
+            const payload = ticket.getPayload();
+            google_id = payload.sub;
+            email = payload.email;
+            name = payload.name;
+            picture = payload.picture;
+        } else if (directGoogleId && directEmail) {
+            // Flow 2 (fallback): Direct user info from accessToken flow
+            // The mobile app fetched this from Google's userinfo API
+            google_id = directGoogleId;
+            email = directEmail;
+            name = directName || 'User';
+            picture = directPicture;
+        } else {
+            return res.status(400).json({ success: false, message: 'Google ID token or user info is required.' });
         }
 
-        const ticket = await client.verifyIdToken({
-            idToken,
-            audience: process.env.GOOGLE_CLIENT_ID,
-        });
-        const payload = ticket.getPayload();
-        const { sub: google_id, email, name, picture } = payload;
-
-        // Check if user exists with this google__id
+        // Check if user exists with this google_id
         const [usersById] = await pool.query('SELECT * FROM users WHERE google_id = ?', [google_id]);
 
         let user;
@@ -221,6 +235,7 @@ exports.googleLogin = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error during Google authentication.' });
     }
 };
+
 
 // Admin: Get all customers
 exports.getAllCustomers = async (req, res) => {

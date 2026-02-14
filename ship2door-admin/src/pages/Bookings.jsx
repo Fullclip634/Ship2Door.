@@ -26,21 +26,21 @@ export default function Bookings() {
     finally { setLoading(false); }
   };
 
-  const directionLabel = (d) => d === 'manila_to_bohol' ? 'Manila → Bohol' : 'Bohol → Manila';
+  const directionLabel = (d) => d === 'manila_to_bohol' ? 'Manila  ▸  Bohol' : 'Bohol  ▸  Manila';
   const statuses = ['', 'pending_pickup', 'picked_up', 'in_transit', 'arrived', 'out_for_delivery', 'delivered', 'cancelled'];
 
   return (
     <div className="page-content">
-      <div style={{ marginBottom: 'var(--space-6)' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em' }}>Bookings</h2>
-        <p style={{ fontSize: '0.875rem', color: 'var(--gray-500)', marginTop: '4px' }}>All customer shipment bookings</p>
+      <div className="page-header">
+        <h2>Bookings</h2>
+        <p>All customer shipment bookings</p>
       </div>
 
       <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
         <div style={{ padding: 'var(--space-4) var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
           <div style={{ position: 'relative' }}>
-            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--gray-400)' }} />
-            <input className="form-input" placeholder="Search by booking #, name..." value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: '36px' }} />
+            <Search size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--gray-400)' }} />
+            <input className="form-input" placeholder="Search by booking #, name..." value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: '40px' }} />
           </div>
           <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
             {statuses.map(s => (

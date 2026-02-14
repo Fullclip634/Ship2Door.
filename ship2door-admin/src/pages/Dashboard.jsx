@@ -9,6 +9,13 @@ import {
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
 
+const getGreeting = () => {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning';
+    if (h < 18) return 'Good afternoon';
+    return 'Good evening';
+};
+
 export default function Dashboard() {
     const navigate = useNavigate();
     const [stats, setStats] = useState(null);
@@ -34,7 +41,7 @@ export default function Dashboard() {
         }
     };
 
-    const directionLabel = (d) => d === 'manila_to_bohol' ? 'Manila → Bohol' : 'Bohol → Manila';
+    const directionLabel = (d) => d === 'manila_to_bohol' ? 'Manila  ▸  Bohol' : 'Bohol  ▸  Manila';
 
     if (loading) {
         return (
@@ -47,12 +54,12 @@ export default function Dashboard() {
     return (
         <div className="page-content">
             <div style={{ marginBottom: 'var(--space-8)', display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-                <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '8px', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ backgroundColor: 'white', borderRadius: '14px', padding: '8px', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-card)' }}>
                     <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 </div>
                 <div>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--navy-800)' }}>Dashboard</h2>
-                    <p style={{ fontSize: '0.875rem', color: 'var(--gray-500)', marginTop: '4px' }}>Welcome back! Here&apos;s your business overview.</p>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--gray-900)' }}>{getGreeting()} 👋</h2>
+                    <p style={{ fontSize: '0.875rem', color: 'var(--gray-500)', marginTop: '4px' }}>Here&apos;s your business overview for today.</p>
                 </div>
             </div>
 

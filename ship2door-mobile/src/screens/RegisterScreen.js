@@ -1,11 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View, Text, TextInput, TouchableOpacity, StyleSheet,
     KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Alert, Image
 } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
 import { useAuth } from '../context/AuthContext';
 import { colors, typography, shadows, radius, spacing } from '../theme';
 import { User, Mail, Phone, Lock, MapPin, Eye, EyeOff, ChevronRight, ChevronLeft } from 'lucide-react-native';
+
+// Complete any pending auth sessions
+WebBrowser.maybeCompleteAuthSession();
+
+// Replace these with your real Google OAuth Client IDs from Google Cloud Console
+const GOOGLE_WEB_CLIENT_ID = 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com';
+const GOOGLE_ANDROID_CLIENT_ID = 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com';
+const GOOGLE_IOS_CLIENT_ID = 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com';
 
 export default function RegisterScreen({ navigation }) {
     const { register, googleLogin } = useAuth();
@@ -17,6 +27,61 @@ export default function RegisterScreen({ navigation }) {
         address_manila: '', address_bohol: ''
     });
     const [loading, setLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
+
+    const [request, response, promptAsync] = Google.useAuthRequest({
+        webClientId: GOOGLE_WEB_CLIENT_ID,
+        androidClientId: GOOGLE_ANDROID_CLIENT_ID,
+        iosClientId: GOOGLE_IOS_CLIENT_ID,
+    });
+
+    useEffect(() => {
+        if (response?.type === 'success') {
+            handleGoogleResponse(response.authentication);
+        }
+    }, [response]);
+
+    const handleGoogleResponse = async (authentication) => {
+        if (!authentication?.idToken) {
+            if (authentication?.accessToken) {
+                setGoogleLoading(true);
+                try {
+                    const userInfoRes = await fetch('https://www.googleapis.com/userinfo/v2/me', {
+                        headers: { Authorization: `Bearer ${authentication.accessToken}` },
+                    });
+                    const userInfo = await userInfoRes.json();
+                    await googleLogin(null, {
+                        email: userInfo.email,
+                        name: userInfo.name,
+                        picture: userInfo.picture,
+                        google_id: userInfo.id,
+                    });
+                } catch (err) {
+                    Alert.alert('Google Sign-Up Failed', err.response?.data?.message || 'Something went wrong.');
+                } finally {
+                    setGoogleLoading(false);
+                }
+            }
+            return;
+        }
+
+        setGoogleLoading(true);
+        try {
+            await googleLogin(authentication.idToken);
+        } catch (err) {
+            Alert.alert('Google Sign-Up Failed', err.response?.data?.message || 'Something went wrong.');
+        } finally {
+            setGoogleLoading(false);
+        }
+    };
+
+    const handleGoogleSignUp = async () => {
+        try {
+            await promptAsync();
+        } catch (err) {
+            Alert.alert('Error', 'Could not open Google Sign-In.');
+        }
+    };
 
     const update = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
@@ -173,13 +238,24 @@ export default function RegisterScreen({ navigation }) {
                                     <View style={styles.dividerLine} />
                                 </View>
 
-                                <TouchableOpacity style={styles.googleBtn} onPress={() => {/* Real Google Flow */ }} activeOpacity={0.7}>
-                                    <Image
-                                        source={{ uri: 'https://www.gstatic.com/images/branding/googleg/2x/googleg_standard_color_64dp.png' }}
-                                        style={styles.googleIcon}
-                                        resizeMode="contain"
-                                    />
-                                    <Text style={styles.googleBtnText}>Sign up with Google</Text>
+                                <TouchableOpacity
+                                    style={[styles.googleBtn, googleLoading && { opacity: 0.7 }]}
+                                    onPress={handleGoogleSignUp}
+                                    disabled={googleLoading || !request}
+                                    activeOpacity={0.7}
+                                >
+                                    {googleLoading ? (
+                                        <ActivityIndicator color={colors.gray[600]} />
+                                    ) : (
+                                        <>
+                                            <Image
+                                                source={{ uri: 'https://www.gstatic.com/images/branding/googleg/2x/googleg_standard_color_64dp.png' }}
+                                                style={styles.googleIcon}
+                                                resizeMode="contain"
+                                            />
+                                            <Text style={styles.googleBtnText}>Sign up with Google</Text>
+                                        </>
+                                    )}
                                 </TouchableOpacity>
                             </>
                         )}

@@ -44,14 +44,14 @@ export default function Announcements() {
         } catch (err) { alert('Error deleting'); }
     };
 
-    const directionLabel = (d) => d === 'manila_to_bohol' ? 'Manila → Bohol' : 'Bohol → Manila';
+    const directionLabel = (d) => d === 'manila_to_bohol' ? 'Manila  ▸  Bohol' : 'Bohol  ▸  Manila';
 
     return (
         <div className="page-content">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
-                <div>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em' }}>Announcements</h2>
-                    <p style={{ fontSize: '0.875rem', color: 'var(--gray-500)', marginTop: '4px' }}>Post updates to all customers</p>
+                <div className="page-header" style={{ marginBottom: 0 }}>
+                    <h2>Announcements</h2>
+                    <p>Post updates to all customers</p>
                 </div>
                 <button className="btn btn-primary" onClick={() => setShowModal(true)}><Plus size={18} /> New Announcement</button>
             </div>
@@ -70,7 +70,7 @@ export default function Announcements() {
                         {announcements.map(a => (
                             <div key={a.id} style={{ padding: 'var(--space-5) var(--space-6)', borderBottom: '1px solid var(--gray-100)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--space-4)' }}>
                                 <div style={{ flex: 1 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)', flexWrap: 'wrap' }}>
                                         <h4 style={{ fontWeight: 600, fontSize: '0.9375rem' }}>{a.title}</h4>
                                         {a.direction && <span className={`direction-badge ${a.direction}`} style={{ fontSize: '0.6875rem' }}>{directionLabel(a.direction)}</span>}
                                     </div>

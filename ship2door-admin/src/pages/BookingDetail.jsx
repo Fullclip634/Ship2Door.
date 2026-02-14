@@ -59,7 +59,7 @@ export default function BookingDetail() {
                 <span className={`status-badge ${booking.status}`} style={{ fontSize: '0.875rem', padding: '6px 14px' }}>{booking.status.replace(/_/g, ' ')}</span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-6)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--space-6)' }}>
                 {/* Sender Info */}
                 <div className="card">
                     <div className="card-header"><h3>Sender</h3></div>
@@ -124,7 +124,7 @@ export default function BookingDetail() {
                                 {booking.items.map((item, i) => (
                                     <div key={item.id} style={{ padding: 'var(--space-3) var(--space-4)', background: 'var(--gray-50)', borderRadius: 'var(--radius-md)' }}>
                                         <div style={{ fontWeight: 500, marginBottom: '4px' }}>{item.description}</div>
-                                        <div style={{ fontSize: '0.75rem', color: 'var(--gray-500)', display: 'flex', gap: 'var(--space-4)' }}>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--gray-500)', display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
                                             <span>Qty: {item.quantity}</span>
                                             {item.size_estimate && <span>Size: {item.size_estimate}</span>}
                                             {item.weight_estimate && <span>Weight: {item.weight_estimate}kg</span>}

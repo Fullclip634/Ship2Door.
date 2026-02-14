@@ -1,10 +1,10 @@
 import React from 'react';
 import { useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
     LayoutDashboard, Ship, Package, Bell, Megaphone,
-    Users, Settings, LogOut, Menu, X, ChevronRight
+    Users, Settings, LogOut, Menu, X
 } from 'lucide-react';
 
 const navItems = [
@@ -16,9 +16,20 @@ const navItems = [
     { to: '/notifications', icon: Bell, label: 'Notifications' },
 ];
 
+const pageTitles = {
+    '/': 'Dashboard',
+    '/trips': 'Trip Management',
+    '/bookings': 'Bookings',
+    '/announcements': 'Announcements',
+    '/customers': 'Customers',
+    '/notifications': 'Notifications',
+    '/settings': 'Settings',
+};
+
 export default function Layout() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const handleLogout = () => {
@@ -27,6 +38,8 @@ export default function Layout() {
     };
 
     const initials = user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'AD';
+
+    const pageTitle = pageTitles[location.pathname] || '';
 
     return (
         <div className="app-layout">
@@ -76,6 +89,7 @@ export default function Layout() {
                         <button className="header-icon-btn menu-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
                             {sidebarOpen ? <X /> : <Menu />}
                         </button>
+                        {pageTitle && <h2>{pageTitle}</h2>}
                     </div>
                     <div className="header-right">
                         <button className="header-icon-btn" onClick={() => navigate('/notifications')}>

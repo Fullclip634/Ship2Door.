@@ -3,6 +3,7 @@
     "name": "ship2door-mobile",
     "slug": "ship2door-mobile",
     "version": "1.0.0",
+    "scheme": "ship2door",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -24,6 +25,9 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-web-browser"
+    ]
   }
 }

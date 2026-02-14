@@ -2,7 +2,7 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { tripAPI } from '../services/api';
-import { Plus, Ship, X, Search } from 'lucide-react';
+import { Plus, Ship, X } from 'lucide-react';
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
 const formatInput = (d) => d ? new Date(d).toISOString().split('T')[0] : '';
@@ -42,16 +42,16 @@ export default function Trips() {
         finally { setSaving(false); }
     };
 
-    const directionLabel = (d) => d === 'manila_to_bohol' ? 'Manila → Bohol' : 'Bohol → Manila';
+    const directionLabel = (d) => d === 'manila_to_bohol' ? 'Manila  ▸  Bohol' : 'Bohol  ▸  Manila';
 
     const statuses = ['', 'scheduled', 'picking_up', 'departed', 'in_transit', 'delayed', 'arrived', 'delivering', 'completed'];
 
     return (
         <div className="page-content">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-6)', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
-                <div>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em' }}>Trip Management</h2>
-                    <p style={{ fontSize: '0.875rem', color: 'var(--gray-500)', marginTop: '4px' }}>Manage your Manila → Bohol cargo trips</p>
+                <div className="page-header" style={{ marginBottom: 0 }}>
+                    <h2>Trip Management</h2>
+                    <p>Manage your Manila ▸ Bohol cargo trips</p>
                 </div>
                 <button className="btn btn-primary" onClick={() => setShowModal(true)}>
                     <Plus size={18} /> New Trip
@@ -126,8 +126,8 @@ export default function Trips() {
                                 <div className="form-group">
                                     <label className="form-label">Direction</label>
                                     <select className="form-select" value={form.direction} onChange={e => setForm({ ...form, direction: e.target.value })}>
-                                        <option value="manila_to_bohol">Manila → Bohol</option>
-                                        <option value="bohol_to_manila">Bohol → Manila</option>
+                                        <option value="manila_to_bohol">Manila  ▸  Bohol</option>
+                                        <option value="bohol_to_manila">Bohol  ▸  Manila</option>
                                     </select>
                                 </div>
                                 <div className="form-row">

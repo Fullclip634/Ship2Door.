@@ -57,8 +57,29 @@ export function AuthProvider({ children }) {
         await AsyncStorage.setItem('ship2door_user', JSON.stringify(data));
     };
 
-    const googleLogin = async (idToken) => {
-        const res = await authAPI.googleLogin({ idToken });
+    /**
+     * Google Login — supports two flows:
+     * 1. idToken flow (preferred): sends Google ID token to backend for verification
+     * 2. userInfo flow (fallback): when expo-auth-session returns only accessToken,
+     *    the screen fetches Google user info and sends it directly
+     */
+    const googleLogin = async (idToken, userInfo) => {
+        let res;
+        if (idToken) {
+            // Flow 1: ID token verification on backend
+            res = await authAPI.googleLogin({ idToken });
+        } else if (userInfo) {
+            // Flow 2: Direct user info (accessToken fallback)
+            res = await authAPI.googleLogin({
+                google_id: userInfo.google_id,
+                email: userInfo.email,
+                name: userInfo.name,
+                picture: userInfo.picture,
+            });
+        } else {
+            throw new Error('No authentication data provided');
+        }
+
         const { token, user: userData } = res.data.data;
         await AsyncStorage.setItem('ship2door_token', token);
         await AsyncStorage.setItem('ship2door_user', JSON.stringify(userData));

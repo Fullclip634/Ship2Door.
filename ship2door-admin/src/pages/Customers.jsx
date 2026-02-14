@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { authAPI } from '../services/api';
-import { Users, Mail, Phone, MapPin } from 'lucide-react';
+import { Users, Search } from 'lucide-react';
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
 
@@ -22,14 +22,17 @@ export default function Customers() {
 
     return (
         <div className="page-content">
-            <div style={{ marginBottom: 'var(--space-6)' }}>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em' }}>Customers</h2>
-                <p style={{ fontSize: '0.875rem', color: 'var(--gray-500)', marginTop: '4px' }}>{customers.length} registered customers</p>
+            <div className="page-header">
+                <h2>Customers</h2>
+                <p>{customers.length} registered customers</p>
             </div>
 
             <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
                 <div style={{ padding: 'var(--space-4) var(--space-6)' }}>
-                    <input className="form-input" placeholder="Search customers..." value={search} onChange={e => setSearch(e.target.value)} />
+                    <div style={{ position: 'relative' }}>
+                        <Search size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--gray-400)' }} />
+                        <input className="form-input" placeholder="Search customers..." value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: '40px' }} />
+                    </div>
                 </div>
             </div>
 

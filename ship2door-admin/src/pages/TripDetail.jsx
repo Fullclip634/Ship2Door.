@@ -64,7 +64,7 @@ export default function TripDetail() {
         finally { setSaving(false); }
     };
 
-    const directionLabel = (d) => d === 'manila_to_bohol' ? 'Manila → Bohol' : 'Bohol → Manila';
+    const directionLabel = (d) => d === 'manila_to_bohol' ? 'Manila  ▸  Bohol' : 'Bohol  ▸  Manila';
 
     if (loading) return <div className="page-content"><p style={{ textAlign: 'center', padding: '4rem', color: 'var(--gray-400)' }}>Loading...</p></div>;
     if (!trip) return <div className="page-content"><p>Trip not found.</p></div>;
@@ -79,7 +79,7 @@ export default function TripDetail() {
 
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 'var(--space-6)', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
                 <div>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                         <span className={`direction-badge ${trip.direction}`} style={{ fontSize: '0.875rem' }}>{directionLabel(trip.direction)}</span>
                         Trip #{trip.id}
                     </h2>
@@ -87,7 +87,7 @@ export default function TripDetail() {
                         Departure: {formatDate(trip.departure_date)} • Est. Arrival: {formatDate(trip.estimated_arrival)}
                     </p>
                 </div>
-                <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
                     <button className="btn btn-secondary" onClick={() => setShowBroadcast(true)}><Megaphone size={18} /> Broadcast</button>
                     <button className="btn btn-primary" onClick={() => setShowStatusModal(true)}>Update Status</button>
                 </div>
@@ -96,17 +96,25 @@ export default function TripDetail() {
             {/* Trip Progress */}
             <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
                 <div className="card-body">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', overflow: 'auto', gap: '0.25rem', paddingBottom: '0.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', overflow: 'auto', gap: '0.25rem', paddingBottom: '0.5rem', position: 'relative' }}>
+                        {/* Connecting line */}
+                        <div style={{
+                            position: 'absolute', top: '16px', left: '40px', right: '40px', height: '3px',
+                            background: `linear-gradient(to right, var(--success-500) ${currentIdx / (tripStatuses.length - 1) * 100}%, var(--gray-200) ${currentIdx / (tripStatuses.length - 1) * 100}%)`,
+                            borderRadius: '2px', zIndex: 0
+                        }} />
                         {tripStatuses.map((s, i) => {
                             const isDone = i <= currentIdx;
                             const isCurrent = i === currentIdx;
                             return (
-                                <div key={s} style={{ textAlign: 'center', flex: 1, minWidth: '80px' }}>
+                                <div key={s} style={{ textAlign: 'center', flex: 1, minWidth: '80px', position: 'relative', zIndex: 1 }}>
                                     <div style={{
-                                        width: '32px', height: '32px', borderRadius: '50%', margin: '0 auto 0.5rem',
+                                        width: '34px', height: '34px', borderRadius: '50%', margin: '0 auto 0.5rem',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        background: isCurrent ? 'var(--orange-500)' : isDone ? 'var(--success-500)' : 'var(--gray-200)',
-                                        color: isDone || isCurrent ? 'white' : 'var(--gray-400)', fontSize: '0.75rem', fontWeight: 600
+                                        background: isCurrent ? 'var(--orange-500)' : isDone ? 'var(--success-500)' : 'white',
+                                        border: isDone || isCurrent ? 'none' : '2px solid var(--gray-200)',
+                                        color: isDone || isCurrent ? 'white' : 'var(--gray-400)', fontSize: '0.75rem', fontWeight: 600,
+                                        boxShadow: isCurrent ? '0 0 0 4px rgba(245, 148, 30, 0.15)' : isDone ? '0 0 0 3px rgba(34, 197, 94, 0.1)' : 'none'
                                     }}>
                                         {isDone && !isCurrent ? <CheckCircle size={16} /> : i + 1}
                                     </div>
@@ -120,7 +128,7 @@ export default function TripDetail() {
                     </div>
                     {trip.delay_reason && (
                         <div style={{ marginTop: 'var(--space-4)', padding: 'var(--space-3) var(--space-4)', background: 'var(--danger-50)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                            <AlertTriangle size={16} style={{ color: 'var(--danger-500)' }} />
+                            <AlertTriangle size={16} style={{ color: 'var(--danger-500)', flexShrink: 0 }} />
                             <span style={{ fontSize: '0.8125rem', color: 'var(--danger-700)', fontWeight: 500 }}>Delay reason: {trip.delay_reason}</span>
                         </div>
                     )}
@@ -178,11 +186,11 @@ export default function TripDetail() {
                                         <td><span className={`status-badge ${b.status}`}>{b.status.replace(/_/g, ' ')}</span></td>
                                         <td>{formatDate(b.pickup_date)}</td>
                                         <td>
-                                            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                                            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
                                                 <button className="btn btn-sm btn-secondary" onClick={() => navigate(`/bookings/${b.id}`)}>View</button>
                                                 <select
                                                     className="form-select"
-                                                    style={{ height: '34px', fontSize: '0.75rem', width: 'auto', minWidth: '130px' }}
+                                                    style={{ height: '36px', fontSize: '0.75rem', width: 'auto', minWidth: '130px' }}
                                                     value={b.status}
                                                     onChange={(e) => handleBookingStatus(b.id, e.target.value)}
                                                 >
