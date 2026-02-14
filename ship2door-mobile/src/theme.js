@@ -165,4 +165,4 @@ export const formatDate = (dateStr) => {
 };
 
 export const directionLabel = (direction) =>
-  direction === 'manila_to_bohol' ? 'Manila → Bohol' : 'Bohol → Manila';
+  direction === 'manila_to_bohol' ? 'Manila  ▸  Bohol' : 'Bohol  ▸  Manila';

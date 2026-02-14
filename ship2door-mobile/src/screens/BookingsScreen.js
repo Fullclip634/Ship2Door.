@@ -43,7 +43,7 @@ export default function BookingsScreen({ navigation }) {
                 </View>
                 <Text style={styles.cardRoute}>{b.sender_name} → {b.receiver_name}</Text>
                 <View style={styles.cardBottom}>
-                    <Text style={styles.cardDir}>{b.direction === 'manila_to_bohol' ? 'Manila → Bohol' : 'Bohol → Manila'}</Text>
+                    <Text style={styles.cardDir}>{b.direction === 'manila_to_bohol' ? 'Manila  ▸  Bohol' : 'Bohol  ▸  Manila'}</Text>
                     <Text style={styles.cardDate}>{formatDate(b.created_at)}</Text>
                 </View>
             </TouchableOpacity>
