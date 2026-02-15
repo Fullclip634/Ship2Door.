@@ -45,6 +45,3 @@ The system uses **Expo Push Service** with **FCM (Firebase Cloud Messaging)**.
 -   **Cargo Tracking**: Real-time status history for every booking.
 
 ---
-
-## 👥 Contributors
--   **Thesis Group**: Joven and Team
