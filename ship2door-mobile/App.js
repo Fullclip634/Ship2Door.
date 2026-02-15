@@ -151,8 +151,8 @@ function AppNavigator() {
       });
 
       return () => {
-        Notifications.removeNotificationSubscription(notificationListener.current);
-        Notifications.removeNotificationSubscription(responseListener.current);
+        notificationListener.current && notificationListener.current.remove();
+        responseListener.current && responseListener.current.remove();
       };
     }
   }, [user]);
