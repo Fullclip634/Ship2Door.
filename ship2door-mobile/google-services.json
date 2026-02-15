@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "565902162215",
+    "project_id": "ship2door-71900",
+    "storage_bucket": "ship2door-71900.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:565902162215:android:b1e196b5144db4d22a5102",
+        "android_client_info": {
+          "package_name": "com.fullclip634.ship2door"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfgLiIOX_7PGj9UZtP09RPIENSvVzxoe0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

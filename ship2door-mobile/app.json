@@ -3,7 +3,13 @@
     "name": "ship2door-mobile",
     "slug": "ship2door-mobile",
     "version": "1.0.0",
+    "owner": "fullclip634s-organization",
     "scheme": "ship2door",
+    "extra": {
+      "eas": {
+        "projectId": "2f2e105e-8247-47d8-960a-99dc83a1cfc0"
+      }
+    },
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -17,6 +23,8 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.fullclip634.ship2door",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
