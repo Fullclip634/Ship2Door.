@@ -1,18 +1,19 @@
 import React, { useState, useCallback } from 'react';
 import {
     View, Text, StyleSheet, FlatList, TouchableOpacity,
-    RefreshControl, ActivityIndicator, Platform
+    RefreshControl, ActivityIndicator, Platform, TextInput
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { bookingAPI } from '../services/api';
 import { colors, typography, shadows, radius, spacing, formatDate, statusColors } from '../theme';
-import { Package } from 'lucide-react-native';
+import { Package, Search, X } from 'lucide-react-native';
 
 export default function BookingsScreen({ navigation }) {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [filter, setFilter] = useState('');
+    const [search, setSearch] = useState('');
 
     const filters = ['', 'pending_pickup', 'picked_up', 'in_transit', 'delivered'];
 
@@ -20,13 +21,14 @@ export default function BookingsScreen({ navigation }) {
         try {
             const params = {};
             if (filter) params.status = filter;
+            if (search.trim()) params.search = search.trim();
             const res = await bookingAPI.getMy(params);
             setBookings(res.data.data);
         } catch (err) { console.error(err); }
         finally { setLoading(false); setRefreshing(false); }
     };
 
-    useFocusEffect(useCallback(() => { loadBookings(); }, [filter]));
+    useFocusEffect(useCallback(() => { loadBookings(); }, [filter, search]));
 
     const renderBooking = ({ item: b }) => {
         const sc = statusColors[b.status] || statusColors.scheduled;
@@ -56,6 +58,28 @@ export default function BookingsScreen({ navigation }) {
                 <Text style={styles.title}>My Shipments</Text>
                 <Text style={styles.subtitle}>{bookings.length} total shipments</Text>
             </View>
+
+            {/* Search Bar */}
+            <View style={styles.searchWrap}>
+                <View style={styles.searchBox}>
+                    <Search size={16} color={colors.gray[400]} />
+                    <TextInput
+                        style={styles.searchInput}
+                        placeholder="Search by booking number..."
+                        placeholderTextColor={colors.gray[400]}
+                        value={search}
+                        onChangeText={setSearch}
+                        returnKeyType="search"
+                        autoCapitalize="characters"
+                    />
+                    {search.length > 0 && (
+                        <TouchableOpacity onPress={() => setSearch('')} activeOpacity={0.6}>
+                            <X size={16} color={colors.gray[400]} />
+                        </TouchableOpacity>
+                    )}
+                </View>
+            </View>
+
             <View style={styles.filterWrap}>
                 <FlatList
                     horizontal showsHorizontalScrollIndicator={false}
@@ -87,8 +111,8 @@ export default function BookingsScreen({ navigation }) {
                     ListEmptyComponent={
                         <View style={styles.empty}>
                             <Package size={40} color={colors.gray[300]} />
-                            <Text style={styles.emptyTitle}>No shipments found</Text>
-                            <Text style={styles.emptyText}>Book a shipment from the Home tab</Text>
+                            <Text style={styles.emptyTitle}>{search ? 'No matching bookings' : 'No shipments found'}</Text>
+                            <Text style={styles.emptyText}>{search ? `No bookings match "${search}"` : 'Book a shipment from the Home tab'}</Text>
                         </View>
                     }
                 />
@@ -107,6 +131,17 @@ const styles = StyleSheet.create({
     },
     title: { ...typography.h2, color: colors.white },
     subtitle: { ...typography.caption, color: 'rgba(255,255,255,0.4)', marginTop: 2 },
+    searchWrap: { backgroundColor: colors.white, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, borderBottomWidth: 1, borderBottomColor: colors.gray[100] },
+    searchBox: {
+        flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+        backgroundColor: colors.gray[50], borderRadius: radius.md,
+        paddingHorizontal: spacing.md, height: 44,
+        borderWidth: 1, borderColor: colors.gray[200],
+    },
+    searchInput: {
+        flex: 1, fontSize: 14, color: colors.gray[900],
+        fontFamily: 'Inter_400Regular', paddingVertical: 0,
+    },
     filterWrap: { backgroundColor: colors.white, paddingVertical: spacing.md, ...shadows.sm },
     filterChip: {
         paddingHorizontal: spacing.base, paddingVertical: spacing.sm,

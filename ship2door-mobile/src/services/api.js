@@ -57,6 +57,8 @@ export const bookingAPI = {
     create: (data) => api.post('/bookings', data),
     getMy: (params) => api.get('/bookings/my', { params }),
     getOne: (id) => api.get(`/bookings/${id}`),
+    cancel: (id) => api.put(`/bookings/${id}/cancel`),
+    edit: (id, data) => api.put(`/bookings/${id}/edit`, data),
 };
 
 export const notificationAPI = {

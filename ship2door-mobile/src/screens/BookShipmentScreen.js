@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { bookingAPI } from '../services/api';
 import { colors, typography, shadows, radius, spacing, directionLabel } from '../theme';
-import { Plus, Minus, Send } from 'lucide-react-native';
+import { Plus, Minus, Send, ArrowLeft, ChevronRight, User, Phone, MapPin, Package, FileText } from 'lucide-react-native';
 
 export default function BookShipmentScreen({ route, navigation }) {
     const { tripId, direction } = route.params;
@@ -16,24 +16,40 @@ export default function BookShipmentScreen({ route, navigation }) {
     });
     const [items, setItems] = useState([{ description: '', quantity: '1', size_estimate: '', weight_estimate: '' }]);
     const [loading, setLoading] = useState(false);
+    const [errors, setErrors] = useState({});
+    const [showSummary, setShowSummary] = useState(false);
 
-    const update = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
+    const update = (key, val) => {
+        setForm(prev => ({ ...prev, [key]: val }));
+        if (errors[key]) setErrors(prev => ({ ...prev, [key]: null }));
+    };
     const updateItem = (idx, key, val) => {
         const copy = [...items];
         copy[idx][key] = val;
         setItems(copy);
+        if (errors[`item_${idx}`]) setErrors(prev => ({ ...prev, [`item_${idx}`]: null }));
     };
     const addItem = () => setItems([...items, { description: '', quantity: '1', size_estimate: '', weight_estimate: '' }]);
     const removeItem = (idx) => { if (items.length > 1) setItems(items.filter((_, i) => i !== idx)); };
 
-    const handleSubmit = async () => {
-        if (!form.sender_name || !form.sender_phone || !form.sender_address ||
-            !form.receiver_name || !form.receiver_phone || !form.receiver_address) {
-            Alert.alert('Error', 'Please fill in all sender and receiver details.');
-            return;
-        }
-        if (!items[0].description) { Alert.alert('Error', 'Please add at least one item.'); return; }
+    const validate = () => {
+        const errs = {};
+        if (!form.sender_name.trim()) errs.sender_name = 'Sender name is required';
+        if (!form.sender_phone.trim()) errs.sender_phone = 'Sender phone is required';
+        if (!form.sender_address.trim()) errs.sender_address = 'Sender address is required';
+        if (!form.receiver_name.trim()) errs.receiver_name = 'Receiver name is required';
+        if (!form.receiver_phone.trim()) errs.receiver_phone = 'Receiver phone is required';
+        if (!form.receiver_address.trim()) errs.receiver_address = 'Receiver address is required';
+        if (!items[0].description.trim()) errs.item_0 = 'At least one item is required';
+        setErrors(errs);
+        return Object.keys(errs).length === 0;
+    };
 
+    const handleReview = () => {
+        if (validate()) setShowSummary(true);
+    };
+
+    const handleSubmit = async () => {
         setLoading(true);
         try {
             await bookingAPI.create({
@@ -54,7 +70,7 @@ export default function BookShipmentScreen({ route, navigation }) {
         <View style={styles.field}>
             <Text style={styles.label}>{label}</Text>
             <TextInput
-                style={[styles.input, multiline && styles.textarea]}
+                style={[styles.input, multiline && styles.textarea, errors[key] && styles.inputError]}
                 placeholder={placeholder}
                 value={form[key]}
                 onChangeText={v => update(key, v)}
@@ -62,8 +78,109 @@ export default function BookShipmentScreen({ route, navigation }) {
                 multiline={multiline}
                 placeholderTextColor={colors.gray[400]}
             />
+            {errors[key] && <Text style={styles.errorText}>{errors[key]}</Text>}
         </View>
     );
+
+    // Confirmation Summary View
+    if (showSummary) {
+        const validItems = items.filter(i => i.description);
+        return (
+            <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.gray[50] }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+                <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+                    <View style={styles.banner}>
+                        <Text style={styles.bannerLabel}>REVIEW BOOKING</Text>
+                        <Text style={styles.bannerText}>{directionLabel(direction)}</Text>
+                    </View>
+
+                    <View style={styles.content}>
+                        <Text style={styles.summaryHeading}>Please review your booking details before submitting.</Text>
+
+                        {/* Sender Summary */}
+                        <View style={styles.summaryCard}>
+                            <View style={styles.summaryCardHeader}>
+                                <User size={14} color={colors.orange[500]} />
+                                <Text style={styles.summaryCardTitle}>Sender</Text>
+                            </View>
+                            <Text style={styles.summaryName}>{form.sender_name}</Text>
+                            <View style={styles.summaryRow}>
+                                <Phone size={12} color={colors.gray[400]} />
+                                <Text style={styles.summaryText}>{form.sender_phone}</Text>
+                            </View>
+                            <View style={styles.summaryRow}>
+                                <MapPin size={12} color={colors.gray[400]} />
+                                <Text style={styles.summaryText}>{form.sender_address}</Text>
+                            </View>
+                        </View>
+
+                        {/* Receiver Summary */}
+                        <View style={styles.summaryCard}>
+                            <View style={styles.summaryCardHeader}>
+                                <User size={14} color={colors.navy[500]} />
+                                <Text style={styles.summaryCardTitle}>Receiver</Text>
+                            </View>
+                            <Text style={styles.summaryName}>{form.receiver_name}</Text>
+                            <View style={styles.summaryRow}>
+                                <Phone size={12} color={colors.gray[400]} />
+                                <Text style={styles.summaryText}>{form.receiver_phone}</Text>
+                            </View>
+                            <View style={styles.summaryRow}>
+                                <MapPin size={12} color={colors.gray[400]} />
+                                <Text style={styles.summaryText}>{form.receiver_address}</Text>
+                            </View>
+                        </View>
+
+                        {/* Items Summary */}
+                        <View style={styles.summaryCard}>
+                            <View style={styles.summaryCardHeader}>
+                                <Package size={14} color={colors.orange[500]} />
+                                <Text style={styles.summaryCardTitle}>Items ({validItems.length})</Text>
+                            </View>
+                            {validItems.map((item, i) => (
+                                <View key={i} style={[styles.summaryItemRow, i === validItems.length - 1 && { borderBottomWidth: 0 }]}>
+                                    <View style={styles.summaryItemNum}>
+                                        <Text style={styles.summaryItemNumText}>{i + 1}</Text>
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={styles.summaryItemDesc}>{item.description}</Text>
+                                        <Text style={styles.summaryItemMeta}>
+                                            Qty: {item.quantity || 1}{item.size_estimate ? ` • ${item.size_estimate}` : ''}{item.weight_estimate ? ` • ${item.weight_estimate}kg` : ''}
+                                        </Text>
+                                    </View>
+                                </View>
+                            ))}
+                        </View>
+
+                        {/* Instructions */}
+                        {form.special_instructions ? (
+                            <View style={styles.summaryCard}>
+                                <View style={styles.summaryCardHeader}>
+                                    <FileText size={14} color={colors.orange[500]} />
+                                    <Text style={styles.summaryCardTitle}>Special Instructions</Text>
+                                </View>
+                                <Text style={styles.summaryText}>{form.special_instructions}</Text>
+                            </View>
+                        ) : null}
+
+                        {/* Action Buttons */}
+                        <TouchableOpacity style={styles.backBtn} onPress={() => setShowSummary(false)} activeOpacity={0.7}>
+                            <ArrowLeft size={16} color={colors.gray[600]} />
+                            <Text style={styles.backBtnText}>Edit Details</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={[styles.submitBtn, loading && { opacity: 0.7 }]} onPress={handleSubmit} disabled={loading} activeOpacity={0.85}>
+                            {loading ? <ActivityIndicator color="white" /> : (
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                                    <Send size={18} color={colors.white} />
+                                    <Text style={styles.submitText}>Confirm & Submit</Text>
+                                </View>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
+        );
+    }
 
     return (
         <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.gray[50] }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -102,8 +219,9 @@ export default function BookShipmentScreen({ route, navigation }) {
                                     </TouchableOpacity>
                                 )}
                             </View>
-                            <TextInput style={styles.input} placeholder="Item description" value={item.description}
+                            <TextInput style={[styles.input, errors[`item_${idx}`] && styles.inputError]} placeholder="Item description" value={item.description}
                                 onChangeText={v => updateItem(idx, 'description', v)} placeholderTextColor={colors.gray[400]} />
+                            {errors[`item_${idx}`] && <Text style={styles.errorText}>{errors[`item_${idx}`]}</Text>}
                             <View style={styles.row}>
                                 <TextInput style={[styles.input, { flex: 1 }]} placeholder="Qty" value={item.quantity}
                                     onChangeText={v => updateItem(idx, 'quantity', v)} keyboardType="numeric" placeholderTextColor={colors.gray[400]} />
@@ -125,14 +243,12 @@ export default function BookShipmentScreen({ route, navigation }) {
                         value={form.special_instructions} onChangeText={v => update('special_instructions', v)}
                         multiline placeholderTextColor={colors.gray[400]} />
 
-                    {/* Submit */}
-                    <TouchableOpacity style={[styles.submitBtn, loading && { opacity: 0.7 }]} onPress={handleSubmit} disabled={loading} activeOpacity={0.85}>
-                        {loading ? <ActivityIndicator color="white" /> : (
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-                                <Send size={18} color={colors.white} />
-                                <Text style={styles.submitText}>Submit Booking</Text>
-                            </View>
-                        )}
+                    {/* Review Button */}
+                    <TouchableOpacity style={styles.submitBtn} onPress={handleReview} activeOpacity={0.85}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                            <Text style={styles.submitText}>Review Booking</Text>
+                            <ChevronRight size={18} color={colors.white} />
+                        </View>
                     </TouchableOpacity>
                 </View>
             </ScrollView>
@@ -155,6 +271,8 @@ const styles = StyleSheet.create({
         fontSize: 15, color: colors.gray[900], fontFamily: 'Inter_400Regular',
         ...shadows.sm,
     },
+    inputError: { borderColor: colors.danger[400] },
+    errorText: { ...typography.small, color: colors.danger[500], marginTop: 4, paddingLeft: 2 },
     textarea: { height: 100, textAlignVertical: 'top', paddingTop: spacing.md },
     itemCard: {
         backgroundColor: colors.white, borderRadius: radius.lg,
@@ -180,4 +298,29 @@ const styles = StyleSheet.create({
         ...shadows.button,
     },
     submitText: { ...typography.button, color: colors.white },
+
+    // Summary styles
+    summaryHeading: { ...typography.body, color: colors.gray[500], marginBottom: spacing.lg, textAlign: 'center', lineHeight: 22 },
+    summaryCard: {
+        backgroundColor: colors.white, borderRadius: radius.lg,
+        padding: spacing.base, marginBottom: spacing.md,
+        ...shadows.card,
+    },
+    summaryCardHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
+    summaryCardTitle: { ...typography.bodySemiBold, color: colors.gray[800], letterSpacing: -0.2 },
+    summaryName: { ...typography.bodyMedium, color: colors.gray[900], marginBottom: spacing.xs },
+    summaryRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm, marginTop: spacing.xs },
+    summaryText: { ...typography.caption, color: colors.gray[500], lineHeight: 20, flex: 1 },
+    summaryItemRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.gray[100], gap: spacing.md },
+    summaryItemNum: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.gray[100], alignItems: 'center', justifyContent: 'center' },
+    summaryItemNumText: { ...typography.small, color: colors.gray[600], fontWeight: '700' },
+    summaryItemDesc: { ...typography.bodyMedium, color: colors.gray[800] },
+    summaryItemMeta: { ...typography.small, color: colors.gray[400], marginTop: 2 },
+    backBtn: {
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm,
+        borderWidth: 1.5, borderColor: colors.gray[200],
+        borderRadius: radius.md, height: 48, marginBottom: spacing.sm,
+        backgroundColor: colors.white,
+    },
+    backBtnText: { ...typography.bodySemiBold, color: colors.gray[600] },
 });

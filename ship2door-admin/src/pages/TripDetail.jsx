@@ -6,6 +6,7 @@ import {
     ArrowLeft, Ship, Package, Clock, CheckCircle, AlertTriangle,
     Truck, MapPin, X, Megaphone, Calendar
 } from 'lucide-react';
+import { useToast } from '../components/Toast';
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
 
@@ -23,6 +24,7 @@ export default function TripDetail() {
     const [delayReason, setDelayReason] = useState('');
     const [broadcast, setBroadcast] = useState({ title: '', message: '' });
     const [saving, setSaving] = useState(false);
+    const toast = useToast();
 
     useEffect(() => { loadTrip(); }, [id]);
 
@@ -42,7 +44,8 @@ export default function TripDetail() {
             setShowStatusModal(false);
             setDelayReason('');
             loadTrip();
-        } catch (err) { alert(err.response?.data?.message || 'Error'); }
+            toast.success('Status updated', `Trip status changed to ${newStatus.replace(/_/g, ' ')}`);
+        } catch (err) { toast.error('Error', err.response?.data?.message || 'Failed to update status'); }
         finally { setSaving(false); }
     };
 
@@ -50,7 +53,8 @@ export default function TripDetail() {
         try {
             await bookingAPI.updateStatus(bookingId, { status });
             loadTrip();
-        } catch (err) { alert(err.response?.data?.message || 'Error'); }
+            toast.success('Booking updated', `Status changed to ${status.replace(/_/g, ' ')}`);
+        } catch (err) { toast.error('Error', err.response?.data?.message || 'Failed to update booking'); }
     };
 
     const handleBroadcast = async (e) => {
@@ -60,7 +64,8 @@ export default function TripDetail() {
             await announcementAPI.create({ trip_id: parseInt(id), ...broadcast, type: 'trip' });
             setShowBroadcast(false);
             setBroadcast({ title: '', message: '' });
-        } catch (err) { alert(err.response?.data?.message || 'Error'); }
+            toast.success('Broadcast sent', 'All customers on this trip have been notified.');
+        } catch (err) { toast.error('Error', err.response?.data?.message || 'Failed to send broadcast'); }
         finally { setSaving(false); }
     };
 

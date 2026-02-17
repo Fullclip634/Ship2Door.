@@ -79,7 +79,7 @@ exports.createBooking = async (req, res) => {
 // Get bookings for current user (Customer)
 exports.getMyBookings = async (req, res) => {
     try {
-        const { status, page = 1, limit = 20 } = req.query;
+        const { status, search, page = 1, limit = 20 } = req.query;
         let query = `SELECT b.*, t.direction, t.departure_date, t.status as trip_status, t.estimated_arrival
                  FROM bookings b JOIN trips t ON b.trip_id = t.id
                  WHERE b.customer_id = ?`;
@@ -88,6 +88,11 @@ exports.getMyBookings = async (req, res) => {
         if (status) {
             query += ' AND b.status = ?';
             params.push(status);
+        }
+
+        if (search) {
+            query += ' AND b.booking_number LIKE ?';
+            params.push(`%${search}%`);
         }
 
         query += ' ORDER BY b.created_at DESC LIMIT ? OFFSET ?';
@@ -255,6 +260,76 @@ exports.updatePickupSchedule = async (req, res) => {
         res.json({ success: true, message: 'Pickup schedule updated.', data: bookings[0] });
     } catch (error) {
         console.error('Update pickup error:', error);
+        res.status(500).json({ success: false, message: 'Server error.' });
+    }
+};
+
+// Cancel booking (Customer — only pending_pickup)
+exports.cancelBooking = async (req, res) => {
+    try {
+        const [bookings] = await pool.query('SELECT * FROM bookings WHERE id = ? AND customer_id = ?', [req.params.id, req.user.id]);
+        if (bookings.length === 0) {
+            return res.status(404).json({ success: false, message: 'Booking not found.' });
+        }
+        if (bookings[0].status !== 'pending_pickup') {
+            return res.status(400).json({ success: false, message: 'Only pending pickup bookings can be cancelled.' });
+        }
+
+        await pool.query('UPDATE bookings SET status = ? WHERE id = ?', ['cancelled', req.params.id]);
+
+        // Notify admin
+        const [admins] = await pool.query('SELECT id FROM users WHERE role = ?', ['admin']);
+        for (const admin of admins) {
+            await pool.query(
+                'INSERT INTO notifications (user_id, booking_id, title, message, type) VALUES (?, ?, ?, ?, ?)',
+                [admin.id, req.params.id, 'Booking Cancelled', `Booking ${bookings[0].booking_number} has been cancelled by the customer.`, 'status_update']
+            );
+        }
+
+        res.json({ success: true, message: 'Booking cancelled successfully.' });
+    } catch (error) {
+        console.error('Cancel booking error:', error);
+        res.status(500).json({ success: false, message: 'Server error.' });
+    }
+};
+
+// Edit booking (Customer — only pending_pickup)
+exports.editBooking = async (req, res) => {
+    try {
+        const [bookings] = await pool.query('SELECT * FROM bookings WHERE id = ? AND customer_id = ?', [req.params.id, req.user.id]);
+        if (bookings.length === 0) {
+            return res.status(404).json({ success: false, message: 'Booking not found.' });
+        }
+        if (bookings[0].status !== 'pending_pickup') {
+            return res.status(400).json({ success: false, message: 'Only pending pickup bookings can be edited.' });
+        }
+
+        const { sender_name, sender_phone, sender_address, receiver_name, receiver_phone, receiver_address, special_instructions, items } = req.body;
+
+        await pool.query(
+            `UPDATE bookings SET sender_name = ?, sender_phone = ?, sender_address = ?,
+             receiver_name = ?, receiver_phone = ?, receiver_address = ?, special_instructions = ? WHERE id = ?`,
+            [sender_name, sender_phone, sender_address, receiver_name, receiver_phone, receiver_address, special_instructions || null, req.params.id]
+        );
+
+        // Update items — delete existing and re-insert
+        if (items && Array.isArray(items)) {
+            await pool.query('DELETE FROM items WHERE booking_id = ?', [req.params.id]);
+            for (const item of items) {
+                await pool.query(
+                    'INSERT INTO items (booking_id, description, quantity, size_estimate, weight_estimate) VALUES (?, ?, ?, ?, ?)',
+                    [req.params.id, item.description, item.quantity || 1, item.size_estimate || null, item.weight_estimate || null]
+                );
+            }
+        }
+
+        const [updated] = await pool.query('SELECT * FROM bookings WHERE id = ?', [req.params.id]);
+        const [updatedItems] = await pool.query('SELECT * FROM items WHERE booking_id = ?', [req.params.id]);
+        updated[0].items = updatedItems;
+
+        res.json({ success: true, message: 'Booking updated successfully.', data: updated[0] });
+    } catch (error) {
+        console.error('Edit booking error:', error);
         res.status(500).json({ success: false, message: 'Server error.' });
     }
 };

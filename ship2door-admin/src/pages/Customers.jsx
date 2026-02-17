@@ -1,9 +1,25 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { authAPI } from '../services/api';
 import { Users, Search } from 'lucide-react';
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
+
+function TableSkeleton() {
+    return (
+        <div>
+            {[...Array(5)].map((_, i) => (
+                <div key={i} className="skeleton-table-row" style={{ gridTemplateColumns: '1fr 1.2fr 0.8fr 1.2fr 1.2fr 0.8fr' }}>
+                    <div className="skeleton" style={{ width: '70%' }} />
+                    <div className="skeleton" style={{ width: '85%' }} />
+                    <div className="skeleton" style={{ width: '60%' }} />
+                    <div className="skeleton" style={{ width: '80%' }} />
+                    <div className="skeleton" style={{ width: '80%' }} />
+                    <div className="skeleton" style={{ width: '55%' }} />
+                </div>
+            ))}
+        </div>
+    );
+}
 
 export default function Customers() {
     const [customers, setCustomers] = useState([]);
@@ -24,7 +40,7 @@ export default function Customers() {
         <div className="page-content">
             <div className="page-header">
                 <h2>Customers</h2>
-                <p>{customers.length} registered customers</p>
+                <p>{loading ? '...' : `${customers.length} registered customers`}</p>
             </div>
 
             <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
@@ -38,7 +54,7 @@ export default function Customers() {
 
             <div className="card">
                 {loading ? (
-                    <div className="empty-state"><p>Loading...</p></div>
+                    <TableSkeleton />
                 ) : filtered.length === 0 ? (
                     <div className="empty-state">
                         <Users />

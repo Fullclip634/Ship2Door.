@@ -7,6 +7,8 @@ router.post('/', authenticate, bookingController.createBooking);
 router.get('/my', authenticate, bookingController.getMyBookings);
 router.get('/all', authenticate, authorizeAdmin, bookingController.getAllBookings);
 router.get('/:id', authenticate, bookingController.getBooking);
+router.put('/:id/cancel', authenticate, bookingController.cancelBooking);
+router.put('/:id/edit', authenticate, bookingController.editBooking);
 router.put('/:id/status', authenticate, authorizeAdmin, bookingController.updateBookingStatus);
 router.put('/:id/pickup', authenticate, authorizeAdmin, bookingController.updatePickupSchedule);
 

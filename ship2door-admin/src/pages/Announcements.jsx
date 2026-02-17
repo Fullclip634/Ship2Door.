@@ -1,17 +1,38 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { announcementAPI, tripAPI } from '../services/api';
+import { useToast } from '../components/Toast';
+import ConfirmDialog from '../components/ConfirmDialog';
 import { Megaphone, Plus, Trash2, X } from 'lucide-react';
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
 
+function AnnouncementSkeleton() {
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {[...Array(3)].map((_, i) => (
+                <div key={i} style={{ padding: 'var(--space-5) var(--space-6)', borderBottom: '1px solid var(--gray-100)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--space-4)' }}>
+                    <div style={{ flex: 1 }}>
+                        <div className="skeleton" style={{ height: '16px', width: '40%', marginBottom: 'var(--space-3)' }} />
+                        <div className="skeleton" style={{ height: '14px', width: '90%', marginBottom: 'var(--space-2)' }} />
+                        <div className="skeleton" style={{ height: '14px', width: '70%', marginBottom: 'var(--space-3)' }} />
+                        <div className="skeleton" style={{ height: '11px', width: '25%' }} />
+                    </div>
+                    <div className="skeleton" style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-sm)', flexShrink: 0 }} />
+                </div>
+            ))}
+        </div>
+    );
+}
+
 export default function Announcements() {
+    const toast = useToast();
     const [announcements, setAnnouncements] = useState([]);
     const [trips, setTrips] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [form, setForm] = useState({ trip_id: '', title: '', message: '', type: 'general' });
     const [saving, setSaving] = useState(false);
+    const [deleteConfirm, setDeleteConfirm] = useState(null); // id to delete
 
     useEffect(() => {
         Promise.all([
@@ -32,16 +53,22 @@ export default function Announcements() {
             setForm({ trip_id: '', title: '', message: '', type: 'general' });
             const res = await announcementAPI.getAll();
             setAnnouncements(res.data.data);
-        } catch (err) { alert(err.response?.data?.message || 'Error'); }
-        finally { setSaving(false); }
+            toast.success('Announcement posted', 'Your announcement has been sent to all customers.');
+        } catch (err) {
+            toast.error('Failed to post', err.response?.data?.message || 'Something went wrong.');
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handleDelete = async (id) => {
-        if (!confirm('Delete this announcement?')) return;
         try {
             await announcementAPI.delete(id);
             setAnnouncements(prev => prev.filter(a => a.id !== id));
-        } catch (err) { alert('Error deleting'); }
+            toast.success('Deleted', 'Announcement has been removed.');
+        } catch (err) {
+            toast.error('Error', 'Failed to delete announcement.');
+        }
     };
 
     const directionLabel = (d) => d === 'manila_to_bohol' ? 'Manila  ▸  Bohol' : 'Bohol  ▸  Manila';
@@ -58,7 +85,7 @@ export default function Announcements() {
 
             <div className="card">
                 {loading ? (
-                    <div className="empty-state"><p>Loading...</p></div>
+                    <AnnouncementSkeleton />
                 ) : announcements.length === 0 ? (
                     <div className="empty-state">
                         <Megaphone />
@@ -77,12 +104,23 @@ export default function Announcements() {
                                     <p style={{ fontSize: '0.875rem', color: 'var(--gray-600)', lineHeight: 1.6, marginBottom: 'var(--space-2)' }}>{a.message}</p>
                                     <span style={{ fontSize: '0.75rem', color: 'var(--gray-400)' }}>{formatDate(a.created_at)}</span>
                                 </div>
-                                <button className="btn btn-sm btn-danger" onClick={() => handleDelete(a.id)}><Trash2 size={14} /></button>
+                                <button className="btn btn-sm btn-danger" onClick={() => setDeleteConfirm(a.id)}><Trash2 size={14} /></button>
                             </div>
                         ))}
                     </div>
                 )}
             </div>
+
+            {/* Confirm Delete Dialog */}
+            <ConfirmDialog
+                open={deleteConfirm !== null}
+                onClose={() => setDeleteConfirm(null)}
+                onConfirm={() => handleDelete(deleteConfirm)}
+                title="Delete Announcement"
+                message="This announcement will be permanently removed. This action cannot be undone."
+                confirmText="Delete"
+                variant="danger"
+            />
 
             {showModal && (
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>

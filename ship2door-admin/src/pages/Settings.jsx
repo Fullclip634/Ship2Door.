@@ -2,6 +2,7 @@ import React from 'react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../services/api';
+import { useToast } from '../components/Toast';
 import { User, Lock, Save, Shield, ChevronRight } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -14,6 +15,7 @@ export default function SettingsPage() {
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState('');
     const [activeTab, setActiveTab] = useState('profile');
+    const toast = useToast();
 
     const handleProfile = async (e) => {
         e.preventDefault();
@@ -23,14 +25,14 @@ export default function SettingsPage() {
             updateUser(res.data.data);
             setMessage('Profile updated successfully!');
             setTimeout(() => setMessage(''), 3000);
-        } catch (err) { alert(err.response?.data?.message || 'Error'); }
+        } catch (err) { toast.error('Error', err.response?.data?.message || 'Failed to update profile'); }
         finally { setSaving(false); }
     };
 
     const handlePassword = async (e) => {
         e.preventDefault();
         if (passwords.newPassword !== passwords.confirmPassword) {
-            alert('Passwords do not match');
+            toast.warning('Mismatch', 'Passwords do not match');
             return;
         }
         setSaving(true);
@@ -39,7 +41,7 @@ export default function SettingsPage() {
             setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' });
             setMessage('Password changed successfully!');
             setTimeout(() => setMessage(''), 3000);
-        } catch (err) { alert(err.response?.data?.message || 'Error'); }
+        } catch (err) { toast.error('Error', err.response?.data?.message || 'Failed to change password'); }
         finally { setSaving(false); }
     };
 

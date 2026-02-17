@@ -6,7 +6,8 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../services/api';
 import { colors, typography, shadows, radius, spacing } from '../theme';
-import { Edit3, LogOut, User, Phone, MapPin, Save } from 'lucide-react-native';
+import { Edit3, LogOut, User, Phone, MapPin, Save, Lock, Eye, EyeOff, Info } from 'lucide-react-native';
+import Constants from 'expo-constants';
 
 export default function ProfileScreen() {
     const { user, logout, updateUser } = useAuth();
@@ -16,6 +17,13 @@ export default function ProfileScreen() {
         address_manila: user?.address_manila || '', address_bohol: user?.address_bohol || ''
     });
     const [saving, setSaving] = useState(false);
+
+    // Password change state
+    const [showPasswordSection, setShowPasswordSection] = useState(false);
+    const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    const [changingPassword, setChangingPassword] = useState(false);
+    const [showCurrent, setShowCurrent] = useState(false);
+    const [showNew, setShowNew] = useState(false);
 
     const update = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
@@ -31,6 +39,30 @@ export default function ProfileScreen() {
         } finally { setSaving(false); }
     };
 
+    const handleChangePassword = async () => {
+        if (!passwordForm.currentPassword || !passwordForm.newPassword) {
+            Alert.alert('Error', 'Please fill in all password fields.');
+            return;
+        }
+        if (passwordForm.newPassword.length < 6) {
+            Alert.alert('Error', 'New password must be at least 6 characters.');
+            return;
+        }
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            Alert.alert('Mismatch', 'New passwords do not match.');
+            return;
+        }
+        setChangingPassword(true);
+        try {
+            await authAPI.changePassword(passwordForm);
+            Alert.alert('Success', 'Password changed successfully!');
+            setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+            setShowPasswordSection(false);
+        } catch (err) {
+            Alert.alert('Error', err.response?.data?.message || 'Failed to change password.');
+        } finally { setChangingPassword(false); }
+    };
+
     const handleLogout = () => {
         Alert.alert('Logout', 'Are you sure you want to sign out?', [
             { text: 'Cancel', style: 'cancel' },
@@ -44,6 +76,8 @@ export default function ProfileScreen() {
         address_manila: <MapPin size={14} color={colors.gray[400]} />,
         address_bohol: <MapPin size={14} color={colors.gray[400]} />,
     };
+
+    const appVersion = Constants.expoConfig?.version || Constants.manifest?.version || '1.0.0';
 
     return (
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -112,11 +146,88 @@ export default function ProfileScreen() {
                     )}
                 </View>
 
+                {/* Change Password */}
+                <View style={styles.card}>
+                    <TouchableOpacity
+                        style={styles.cardHeader}
+                        onPress={() => setShowPasswordSection(!showPasswordSection)}
+                        activeOpacity={0.6}
+                    >
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                            <Lock size={16} color={colors.gray[600]} />
+                            <Text style={styles.cardTitle}>Change Password</Text>
+                        </View>
+                        <Text style={styles.editBtnText}>{showPasswordSection ? 'Close' : 'Open'}</Text>
+                    </TouchableOpacity>
+
+                    {showPasswordSection && (
+                        <View style={{ marginTop: spacing.sm }}>
+                            <View style={styles.field}>
+                                <Text style={styles.label}>Current Password</Text>
+                                <View style={styles.passwordRow}>
+                                    <TextInput
+                                        style={[styles.input, { flex: 1 }]}
+                                        placeholder="Enter current password"
+                                        value={passwordForm.currentPassword}
+                                        onChangeText={v => setPasswordForm(p => ({ ...p, currentPassword: v }))}
+                                        secureTextEntry={!showCurrent}
+                                        placeholderTextColor={colors.gray[400]}
+                                    />
+                                    <TouchableOpacity onPress={() => setShowCurrent(!showCurrent)} style={styles.eyeBtn}>
+                                        {showCurrent ? <EyeOff size={18} color={colors.gray[400]} /> : <Eye size={18} color={colors.gray[400]} />}
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                            <View style={styles.field}>
+                                <Text style={styles.label}>New Password</Text>
+                                <View style={styles.passwordRow}>
+                                    <TextInput
+                                        style={[styles.input, { flex: 1 }]}
+                                        placeholder="Minimum 6 characters"
+                                        value={passwordForm.newPassword}
+                                        onChangeText={v => setPasswordForm(p => ({ ...p, newPassword: v }))}
+                                        secureTextEntry={!showNew}
+                                        placeholderTextColor={colors.gray[400]}
+                                    />
+                                    <TouchableOpacity onPress={() => setShowNew(!showNew)} style={styles.eyeBtn}>
+                                        {showNew ? <EyeOff size={18} color={colors.gray[400]} /> : <Eye size={18} color={colors.gray[400]} />}
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                            <View style={styles.field}>
+                                <Text style={styles.label}>Confirm New Password</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Re-enter new password"
+                                    value={passwordForm.confirmPassword}
+                                    onChangeText={v => setPasswordForm(p => ({ ...p, confirmPassword: v }))}
+                                    secureTextEntry={true}
+                                    placeholderTextColor={colors.gray[400]}
+                                />
+                            </View>
+                            <TouchableOpacity style={styles.saveBtn} onPress={handleChangePassword} disabled={changingPassword} activeOpacity={0.85}>
+                                {changingPassword ? <ActivityIndicator color="white" /> : (
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                                        <Lock size={16} color={colors.white} />
+                                        <Text style={styles.saveBtnText}>Update Password</Text>
+                                    </View>
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                </View>
+
                 {/* Logout */}
                 <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.6}>
                     <LogOut size={18} color={colors.danger[500]} />
                     <Text style={styles.logoutText}>Sign Out</Text>
                 </TouchableOpacity>
+
+                {/* App Version */}
+                <View style={styles.versionWrap}>
+                    <Info size={12} color={colors.gray[300]} />
+                    <Text style={styles.versionText}>Ship2Door v{appVersion}</Text>
+                </View>
             </View>
         </ScrollView>
     );
@@ -145,7 +256,7 @@ const styles = StyleSheet.create({
     content: { padding: spacing.lg },
     card: {
         backgroundColor: colors.white, borderRadius: radius.xl,
-        padding: spacing.lg,
+        padding: spacing.lg, marginBottom: spacing.md,
         ...shadows.card,
     },
     cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.lg },
@@ -162,6 +273,8 @@ const styles = StyleSheet.create({
         fontSize: 15, color: colors.gray[900], fontFamily: 'Inter_400Regular',
     },
     textarea: { height: 80, textAlignVertical: 'top', paddingTop: spacing.md },
+    passwordRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+    eyeBtn: { padding: spacing.sm },
     saveBtn: {
         backgroundColor: colors.orange[500], borderRadius: radius.md,
         height: 52, alignItems: 'center', justifyContent: 'center',
@@ -171,10 +284,15 @@ const styles = StyleSheet.create({
     saveBtnText: { ...typography.button, color: colors.white },
     logoutBtn: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm,
-        marginTop: spacing.xl, backgroundColor: colors.white,
+        marginTop: spacing.sm, backgroundColor: colors.white,
         borderWidth: 1.5, borderColor: colors.danger[100],
         borderRadius: radius.md, height: 52,
         ...shadows.sm,
     },
     logoutText: { ...typography.button, color: colors.danger[500] },
+    versionWrap: {
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+        gap: spacing.xs, marginTop: spacing.xl, paddingBottom: spacing.xl,
+    },
+    versionText: { ...typography.small, color: colors.gray[300] },
 });

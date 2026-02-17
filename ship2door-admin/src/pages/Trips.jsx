@@ -2,6 +2,7 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { tripAPI } from '../services/api';
+import { useToast } from '../components/Toast';
 import { Plus, Ship, X } from 'lucide-react';
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
@@ -17,6 +18,7 @@ export default function Trips() {
         direction: 'manila_to_bohol', departure_date: '', estimated_arrival: '', booking_cutoff: '', notes: ''
     });
     const [saving, setSaving] = useState(false);
+    const toast = useToast();
 
     useEffect(() => { loadTrips(); }, [filter]);
 
@@ -38,7 +40,8 @@ export default function Trips() {
             setShowModal(false);
             setForm({ direction: 'manila_to_bohol', departure_date: '', estimated_arrival: '', booking_cutoff: '', notes: '' });
             loadTrips();
-        } catch (err) { alert(err.response?.data?.message || 'Error creating trip'); }
+            toast.success('Trip created', 'New trip has been created successfully.');
+        } catch (err) { toast.error('Error', err.response?.data?.message || 'Failed to create trip'); }
         finally { setSaving(false); }
     };
 
@@ -71,7 +74,19 @@ export default function Trips() {
 
             <div className="card">
                 {loading ? (
-                    <div className="empty-state"><p>Loading...</p></div>
+                    <div>
+                        {[...Array(3)].map((_, i) => (
+                            <div key={i} className="skeleton-table-row" style={{ gridTemplateColumns: '1fr 0.8fr 0.8fr 0.8fr 0.8fr 0.6fr 0.6fr' }}>
+                                <div className="skeleton" style={{ width: '70%' }} />
+                                <div className="skeleton" style={{ width: '65%' }} />
+                                <div className="skeleton" style={{ width: '65%' }} />
+                                <div className="skeleton" style={{ width: '65%' }} />
+                                <div className="skeleton" style={{ width: '55%' }} />
+                                <div className="skeleton" style={{ width: '40%' }} />
+                                <div className="skeleton" style={{ width: '50%' }} />
+                            </div>
+                        ))}
+                    </div>
                 ) : trips.length === 0 ? (
                     <div className="empty-state">
                         <Ship />

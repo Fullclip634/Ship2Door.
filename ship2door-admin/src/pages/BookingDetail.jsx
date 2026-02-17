@@ -2,6 +2,7 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { bookingAPI } from '../services/api';
+import { useToast } from '../components/Toast';
 import { ArrowLeft, Package, MapPin, Phone, User, FileText, Calendar } from 'lucide-react';
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
@@ -14,6 +15,7 @@ export default function BookingDetail() {
     const [loading, setLoading] = useState(true);
     const [pickupDate, setPickupDate] = useState('');
     const [pickupTime, setPickupTime] = useState('');
+    const toast = useToast();
 
     useEffect(() => { loadBooking(); }, [id]);
 
@@ -31,15 +33,16 @@ export default function BookingDetail() {
         try {
             await bookingAPI.updateStatus(id, { status });
             loadBooking();
-        } catch (err) { alert(err.response?.data?.message || 'Error'); }
+            toast.success('Status updated', `Booking status changed to ${status.replace(/_/g, ' ')}`);
+        } catch (err) { toast.error('Error', err.response?.data?.message || 'Failed to update status'); }
     };
 
     const handlePickup = async () => {
         try {
             await bookingAPI.updatePickup(id, { pickup_date: pickupDate, pickup_time_window: pickupTime });
-            alert('Pickup scheduled! Customer will be notified.');
+            toast.success('Pickup scheduled', 'Customer will be notified about the pickup schedule.');
             loadBooking();
-        } catch (err) { alert(err.response?.data?.message || 'Error'); }
+        } catch (err) { toast.error('Error', err.response?.data?.message || 'Failed to schedule pickup'); }
     };
 
     if (loading) return <div className="page-content"><p style={{ textAlign: 'center', padding: '4rem', color: 'var(--gray-400)' }}>Loading...</p></div>;

@@ -1,10 +1,38 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { bookingAPI } from '../services/api';
 import { Package, Search } from 'lucide-react';
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
+
+// Debounce hook
+function useDebounce(value, delay = 400) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
+}
+
+function TableSkeleton() {
+  return (
+    <div>
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="skeleton-table-row" style={{ gridTemplateColumns: '1fr 1.2fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 0.5fr' }}>
+          <div className="skeleton" style={{ width: '75%' }} />
+          <div className="skeleton" style={{ width: '85%' }} />
+          <div className="skeleton" style={{ width: '70%' }} />
+          <div className="skeleton" style={{ width: '60%' }} />
+          <div className="skeleton" style={{ width: '60%' }} />
+          <div className="skeleton" style={{ width: '55%' }} />
+          <div className="skeleton" style={{ width: '65%' }} />
+          <div className="skeleton" style={{ width: '50%' }} />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function Bookings() {
   const navigate = useNavigate();
@@ -12,14 +40,16 @@ export default function Bookings() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search);
 
-  useEffect(() => { loadBookings(); }, [filter, search]);
+  useEffect(() => { loadBookings(); }, [filter, debouncedSearch]);
 
   const loadBookings = async () => {
+    setLoading(true);
     try {
       const params = {};
       if (filter) params.status = filter;
-      if (search) params.search = search;
+      if (debouncedSearch) params.search = debouncedSearch;
       const res = await bookingAPI.getAll(params);
       setBookings(res.data.data);
     } catch (err) { console.error(err); }
@@ -55,7 +85,7 @@ export default function Bookings() {
 
       <div className="card">
         {loading ? (
-          <div className="empty-state"><p>Loading...</p></div>
+          <TableSkeleton />
         ) : bookings.length === 0 ? (
           <div className="empty-state">
             <Package />

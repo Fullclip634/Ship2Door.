@@ -1,7 +1,7 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { notificationAPI } from '../services/api';
 import {
     LayoutDashboard, Ship, Package, Bell, Megaphone,
     Users, Settings, LogOut, Menu, X
@@ -31,6 +31,33 @@ export default function Layout() {
     const navigate = useNavigate();
     const location = useLocation();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    // Fetch unread notification count
+    const fetchUnreadCount = useCallback(async () => {
+        try {
+            const res = await notificationAPI.getUnreadCount();
+            setUnreadCount(res.data.count || 0);
+        } catch (err) {
+            console.error('Failed to fetch unread count:', err);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchUnreadCount();
+        // Poll every 30 seconds
+        const interval = setInterval(fetchUnreadCount, 30000);
+        return () => clearInterval(interval);
+    }, [fetchUnreadCount]);
+
+    // Refresh count when navigating away from notifications
+    useEffect(() => {
+        if (location.pathname === '/notifications') {
+            // Small delay to let the page mark notifications as read
+            const timeout = setTimeout(fetchUnreadCount, 1000);
+            return () => clearTimeout(timeout);
+        }
+    }, [location.pathname, fetchUnreadCount]);
 
     const handleLogout = () => {
         logout();
@@ -64,6 +91,9 @@ export default function Layout() {
                         >
                             <item.icon />
                             <span>{item.label}</span>
+                            {item.to === '/notifications' && unreadCount > 0 && (
+                                <span className="nav-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
+                            )}
                         </NavLink>
                     ))}
 
@@ -94,6 +124,11 @@ export default function Layout() {
                     <div className="header-right">
                         <button className="header-icon-btn" onClick={() => navigate('/notifications')}>
                             <Bell />
+                            {unreadCount > 0 && (
+                                <span className="notification-badge">
+                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                </span>
+                            )}
                         </button>
                         <div className="header-avatar">{initials}</div>
                     </div>

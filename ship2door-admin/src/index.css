@@ -1317,6 +1317,318 @@ img {
   line-height: 1.5;
 }
 
+/* ─── Skeleton Loader ────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-200) 50%, var(--gray-100) 75%);
+  background-size: 400% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+.skeleton-text {
+  height: 14px;
+  margin-bottom: var(--space-2);
+}
+
+.skeleton-text-sm {
+  height: 11px;
+  width: 60%;
+  margin-bottom: var(--space-2);
+}
+
+.skeleton-heading {
+  height: 28px;
+  width: 40%;
+  margin-bottom: var(--space-3);
+}
+
+.skeleton-stat-card {
+  padding: var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+}
+
+.skeleton-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.skeleton-stat-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.skeleton-value {
+  height: 32px;
+  width: 50%;
+}
+
+.skeleton-label {
+  height: 12px;
+  width: 75%;
+}
+
+.skeleton-table-row {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1fr 0.8fr 0.8fr 0.6fr;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.skeleton-table-row .skeleton {
+  height: 16px;
+  border-radius: var(--radius-sm);
+}
+
+/* ─── Toast Notifications ────────────────────────────────── */
+.toast-container {
+  position: fixed;
+  top: var(--space-6);
+  right: var(--space-6);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  background: white;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(15, 23, 42, 0.04);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray-800);
+  min-width: 320px;
+  max-width: 440px;
+  animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.25s ease;
+}
+
+.toast.toast-exiting {
+  animation: toastSlideOut 0.25s ease forwards;
+}
+
+.toast-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.toast-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.toast-success .toast-icon {
+  background: var(--success-50);
+  color: var(--success-500);
+}
+
+.toast-error .toast-icon {
+  background: var(--danger-50);
+  color: var(--danger-500);
+}
+
+.toast-info .toast-icon {
+  background: var(--info-50);
+  color: var(--info-500);
+}
+
+.toast-warning .toast-icon {
+  background: var(--warning-50);
+  color: var(--warning-500);
+}
+
+.toast-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-title {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--gray-900);
+  margin-bottom: 2px;
+}
+
+.toast-message {
+  font-size: 0.8125rem;
+  color: var(--gray-500);
+  line-height: 1.4;
+}
+
+.toast-close {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-400);
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.toast-close:hover {
+  background: var(--gray-100);
+  color: var(--gray-600);
+}
+
+.toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  transition: width linear;
+}
+
+.toast-success .toast-progress {
+  background: var(--success-500);
+}
+
+.toast-error .toast-progress {
+  background: var(--danger-500);
+}
+
+.toast-info .toast-progress {
+  background: var(--info-500);
+}
+
+.toast-warning .toast-progress {
+  background: var(--warning-500);
+}
+
+/* ─── Confirm Dialog ─────────────────────────────────────── */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: var(--space-4);
+  animation: fadeIn 0.15s ease;
+}
+
+.confirm-dialog {
+  background: white;
+  border-radius: var(--radius-2xl);
+  width: 100%;
+  max-width: 420px;
+  padding: var(--space-8);
+  text-align: center;
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--shadow-xl);
+}
+
+.confirm-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-5);
+}
+
+.confirm-icon.danger {
+  background: var(--danger-50);
+  color: var(--danger-500);
+}
+
+.confirm-icon.warning {
+  background: var(--warning-50);
+  color: var(--warning-500);
+}
+
+.confirm-icon.info {
+  background: var(--info-50);
+  color: var(--info-500);
+}
+
+.confirm-dialog h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-2);
+}
+
+.confirm-dialog p {
+  font-size: 0.875rem;
+  color: var(--gray-500);
+  line-height: 1.6;
+  margin-bottom: var(--space-6);
+}
+
+.confirm-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.confirm-actions .btn {
+  flex: 1;
+}
+
+/* ─── Notification Badge ─────────────────────────────────── */
+.notification-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: var(--danger-500);
+  color: white;
+  font-size: 0.625rem;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border: 2px solid var(--gray-50);
+  animation: badgePop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── Table Row Hover Enhancement ────────────────────────── */
+.table tbody tr {
+  transition: all var(--transition-fast);
+}
+
+.table tbody tr:hover {
+  background: var(--gray-25);
+  transform: translateX(2px);
+}
+
+/* ─── Nav Item Hover Enhancement ─────────────────────────── */
+.nav-item:hover:not(.active) {
+  transform: translateX(4px);
+}
+
 /* ─── Animations ─────────────────────────────────────────── */
 @keyframes fadeIn {
   from {
@@ -1367,6 +1679,54 @@ img {
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes toastSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(100%) scale(0.95);
+  }
+}
+
+@keyframes badgePop {
+  0% {
+    transform: scale(0);
+  }
+
+  60% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
   }
 }
 
