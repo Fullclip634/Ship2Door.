@@ -11,9 +11,8 @@ To run the system locally, follow these steps in order.
 ### 1. Backend Setup (`/ship2door-backend`)
 1.  **Dependencies**: Run `npm install`.
 2.  **Database**: Install MySQL and create a database named `ship2door`.
-3.  **Environment**: Ensure the `.env` file is present (or create one using `.env.example`).
-4.  **Migrations**: Run the migration scripts (e.g., `node migrate_push_token.js`) to set up the tables.
-5.  **Run**: `npm run dev`.
+
+3.  **Run**: `npm run dev`.
 
 ### 2. Admin Panel Setup (`/ship2door-admin`)
 1.  **Dependencies**: Run `npm install`.
